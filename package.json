@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "lint" : ""npx --yes eslint . --ext .js || true",
+    "lint" : "npx --yes eslint . --ext .js || true",
     "test" : " node --test"
   },
   "dependencies": {
