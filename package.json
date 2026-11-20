@@ -1,0 +1,14 @@
+{
+  "name": "devops-app",
+  "version": "1.0.0",
+  "description": "Sample DevOps pipeline app",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "lint" : ""npx --yes eslint . --ext .js || true",
+    "test" : " node --test"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

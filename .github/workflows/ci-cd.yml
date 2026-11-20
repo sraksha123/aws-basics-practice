@@ -1,0 +1,73 @@
+name: CI & CD Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  IMAGE_NAME: devops-app
+
+jobs:
+  ci-test-build-scan:
+    name: CI - Test, Build & Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies and run tests
+        run: |
+          npm ci
+          npm test
+
+      - name: Build Docker image
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          docker build -t "${IMAGE_NAME}:${SHORT_SHA}" -t "${IMAGE_NAME}:latest" .
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: "image"
+          image-ref: "${IMAGE_NAME}:latest"
+          format: "table"
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+
+      - name: Push image to Docker Hub (optional before AWS)
+        if: vars.ENABLE_DOCKERHUB_PUSH == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          docker tag "${IMAGE_NAME}:latest" "${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:${SHORT_SHA}"
+          docker tag "${IMAGE_NAME}:latest" "${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:latest"
+          docker push "${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:${SHORT_SHA}"
+          docker push "${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:latest"
+
+  cd-deploy:
+    name: CD - Deploy (Gated Until Enabled)
+    needs: ci-test-build-scan
+    if: vars.ENABLE_CD == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy placeholder (wire Kubernetes / EKS manifest update here in Phase 4)
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "CD enabled. Ready to roll out ${IMAGE_NAME}:${SHORT_SHA}"
+
