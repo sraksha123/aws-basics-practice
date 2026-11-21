@@ -31,13 +31,13 @@ jobs:
       - name: Build Docker image
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
-          docker build -t "${IMAGE_NAME}:${SHORT_SHA}" -t "${IMAGE_NAME}:latest" .
+          docker build --pull --n-cache -t "${IMAGE_NAME}:${SHORT_SHA}" -t "${IMAGE_NAME}:latest" .
 
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: "image"
-          image-ref: "${{env.IMAGE_NAME}}:latest"
+          image-ref: "${{env.IMAGE_NAME}}:{{github.sha}}"
           format: "table"
           exit-code: "1"
           ignore-unfixed: true
