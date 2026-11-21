@@ -11,6 +11,7 @@ RUN addgroup -g 1001 -S nodejs && adduser -u 1001 -S nodejs -G nodejs
 COPY --from=builder /app/node_modules ./node_modules
 COPY package*.json ./
 COPY app.js ./
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 USER nodejs
 
 EXPOSE 3000
