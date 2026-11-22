@@ -2,7 +2,7 @@
 FROM node:26-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --only=production && npm cache clean --force
 
 # Stage 2: Production runtime stage
 FROM node:26-alpine AS runner
@@ -11,6 +11,7 @@ RUN addgroup -g 1001 -S nodejs && adduser -u 1001 -S nodejs -G nodejs
 COPY --from=builder /app/node_modules ./node_modules
 COPY package*.json ./
 COPY app.js ./
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 USER nodejs
 
 EXPOSE 3000
