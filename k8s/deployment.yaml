@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: devops-app
-          image: ghcr.io/your-owner/devops-app:latest
+          image: ghcr.io/sraksha123/devops-app:834f89c
           ports:
             - containerPort: 3000
