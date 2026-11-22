@@ -60,12 +60,14 @@ jobs:
       - name: Push image to ghcr.io
         if: vars.ENABLE_DOCKERHUB_PUSH == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-            SHORT_SHA=$(git rev-parse --short HEAD)
-            IMAGE_PATH="ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}"
-            docker tag "${IMAGE_NAME}:latest" "${IMAGE_PATH}:${SHORT_SHA}"
-            docker tag "${IMAGE_NAME}:latest" "${IMAGE_PATH}:latest"
-            docker push "${IMAGE_PATH}:${SHORT_SHA}"
-            docker push "${IMAGE_PATH}:latest"
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_LOWER=$(echo "${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_PATH="ghcr.io/${OWNER_LOWER}/${IMAGE_LOWER}"
+          docker tag "${IMAGE_NAME}:latest" "${IMAGE_PATH}:${SHORT_SHA}"
+          docker tag "${IMAGE_NAME}:latest" "${IMAGE_PATH}:latest"
+          docker push "${IMAGE_PATH}:${SHORT_SHA}"
+          docker push "${IMAGE_PATH}:latest"
 
   cd-deploy:
     name: CD - Deploy (Gated Until Enabled)
