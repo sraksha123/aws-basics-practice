@@ -8,7 +8,10 @@ on:
 
 env:
   IMAGE_NAME: devops-app
-
+permissions:
+  contents: write
+  packages: write
+  
 jobs:
   ci-test-build-scan:
     name: CI - Test, Build & Scan
